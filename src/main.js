@@ -41,25 +41,33 @@ sampleTable.render(data);
     const applySearching = initSearching(searchInput); 
     //фильтры 
 const filterElements = {};
-Object.keys(indexes).forEach(key => {
-    // 1. Сначала пробуем найти элемент точно по ключу из данных (например, "customers")
-    let element = sampleTable.container.querySelector(`[name="${key}"]`);
 
-    // 2. Если не нашли (а мы знаем, что не найдём из-за разницы в числе), пробуем вариант в единственном числе
+Object.keys(indexes).forEach(key => {
+    // 1. Пытаемся найти элемент по имени из данных (на случай совпадения)
+    let element = sampleTable.container.querySelector(`[name="${key}"]`);
+    // 2. Если не нашли, пробуем вариант в единственном числе (убираем 's')
     if (!element && key.endsWith('s')) {
-        const singularKey = key.slice(0, -1); // Убираем последнюю букву 's'
+        const singularKey = key.slice(0, -1);
         element = sampleTable.container.querySelector(`[name="${singularKey}"]`);
+        // Если мы нашли элемент через singularKey,то и ключ в объекте должен быть singularKey, чтобы совпадать с data-field кнопки!
+        if (element) {
+            filterElements[singularKey] = element;
+            return; // Прерываем цикл для этого ключа, так как нашли
+        }
     }
-    // 3. Если всё равно не нашли, пробуем искать по data-field, если вдруг там используется ключ из данных
+    // 3. Если всё ещё не нашли, пробуем искать по data-field (на всякий случай)
     if (!element) {
         element = sampleTable.container.querySelector(`[data-field="${key}"]`);
+        if (element) {
+            filterElements[key] = element;
+        }
     }
-    if (element) {
-        filterElements[key] = element;
+    // 4. Если нашли обычным способом (без удаления 's')
+    if (element && !filterElements.hasOwnProperty(key)) {
+         filterElements[key] = element;
     }
 });
 const applyFiltering = initFiltering(filterElements, indexes);
-
     // сортировка
     const applySorting = initSorting([        // Нам нужно передать сюда массив элементов, которые вызывают сортировку, чтобы изменять их визуальное представление
         sampleTable.header.elements.sortByDate,
@@ -107,5 +115,3 @@ function render(action) {
     result = applyPagination(result, state, action);
     sampleTable.render(result);
 }
-
-
