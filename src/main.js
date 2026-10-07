@@ -107,3 +107,5 @@ function render(action) {
     result = applyPagination(result, state, action);
     sampleTable.render(result);
 }
+
+
