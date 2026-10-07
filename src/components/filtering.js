@@ -23,8 +23,11 @@ export function initFiltering(elements, indexes) {
     });
     // 2. НАСТРАИВАЕМ КОМПАРАТОР ПРАВИЛЬНО
     // Вместо defaultRules собираем правила вручную.
-    const compare = createComparison(
-        ['skipEmptyTargetValues', 'arrayAsRange'],
+    const compare = createComparison([
+        'skipEmptyTargetValues', 
+        'caseInsensitiveStringIncludes',
+        'arrayAsRange'
+        ],
     );
     // 3. Возвращаем функцию фильтрации
     return (data, state, action) => {
