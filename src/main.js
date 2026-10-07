@@ -43,30 +43,38 @@ sampleTable.render(data);
 const filterElements = {};
 
 Object.keys(indexes).forEach(key => {
-    // 1. Пытаемся найти элемент по имени из данных (на случай совпадения)
-    let element = sampleTable.container.querySelector(`[name="${key}"]`);
-    // 2. Если не нашли, пробуем вариант в единственном числе (убираем 's')
+    let element = null;
+    let finalKey = key; // Ключ, под которым мы сохраним элемент
+
+    // 1. Пытаемся найти элемент по точному имени из данных
+    element = sampleTable.container.querySelector(`[name="${key}"]`);
+
+    // 2. Если не нашли и ключ во множественном числе (customers), пробуем единственное (customer)
     if (!element && key.endsWith('s')) {
         const singularKey = key.slice(0, -1);
         element = sampleTable.container.querySelector(`[name="${singularKey}"]`);
-        // Если мы нашли элемент через singularKey,то и ключ в объекте должен быть singularKey, чтобы совпадать с data-field кнопки!
+        
         if (element) {
-            filterElements[singularKey] = element;
-            return; // Прерываем цикл для этого ключа, так как нашли
+            finalKey = singularKey; // Сохраняем под ключом в единственном числе
         }
     }
-    // 3. Если всё ещё не нашли, пробуем искать по data-field (на всякий случай)
+
+    // 3. Если всё ещё не нашли, пробуем искать по data-field (резервный вариант)
     if (!element) {
         element = sampleTable.container.querySelector(`[data-field="${key}"]`);
         if (element) {
-            filterElements[key] = element;
+            finalKey = key;
         }
     }
-    // 4. Если нашли обычным способом (без удаления 's')
-    if (element && !filterElements.hasOwnProperty(key)) {
-         filterElements[key] = element;
+
+    // 4. Если элемент найден, сохраняем его в объект
+    if (element) {
+        filterElements[finalKey] = element;
+    } else {
+        console.warn(`⚠️ Не удалось найти элемент для фильтра: ${key}`);
     }
 });
+
 const applyFiltering = initFiltering(filterElements, indexes);
     // сортировка
     const applySorting = initSorting([        // Нам нужно передать сюда массив элементов, которые вызывают сортировку, чтобы изменять их визуальное представление
@@ -106,6 +114,20 @@ function collectState() {
 }
 
 function render(action) {
+    if (action && action.name === 'clear') {
+    const fieldName = action.dataset.field;
+    // Ищем элемент по имени поля (оно должно совпадать с name в HTML)
+    const input = sampleTable.container.querySelector(`[name="${fieldName}"]`);
+        
+    if (input) {
+    input.value = ''; // Очищаем визуально
+    // Если это select, сбрасываем индекс
+        if (input.tagName === 'SELECT') {
+        input.selectedIndex = 0;
+        }
+    }
+}     
+
     let state = collectState(); // состояние полей из таблицы
     let result = [...data]; // копируем для последующего изменения
     // @todo: использование

@@ -16,13 +16,7 @@ export function initSearching(searchField) {
         ]
     );
     return (data, state, action) => {
-        // Если есть действие очистки (кнопка reset), сбрасываем поле
-        if (action && action.name === 'clear') {
-            if (searchField) { 
-                searchField.value = '';
-            }
-            // Можно также очистить state, если он мутабельный, но обычно достаточно очистить DOM
-        }
+        
         return data.filter(row => compareSearch(row, state));
     }
 }

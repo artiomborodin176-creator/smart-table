@@ -32,32 +32,19 @@ export function initFiltering(elements, indexes) {
     // 3. Возвращаем функцию фильтрации
     return (data, state, action) => {
         const preparedState = { ...state };
-        // Собираем диапазон для поля 'total'
         const from = preparedState.totalFrom;
         const to = preparedState.totalTo;
-        // Если оба поля заполнены, формируем массив
+
+        // Собираем массив [from, to] для поля 'total', чтобы сработало правило arrayAsRange
         if (from !== undefined && from !== '' && to !== undefined && to !== '') {
             preparedState.total = [Number(from), Number(to)];
         } else if (from !== undefined && from !== '') {
             preparedState.total = [Number(from), Infinity];
         } else if (to !== undefined && to !== '') {
-            // Если есть только "до"
             preparedState.total = [-Infinity, Number(to)];
         }
-        // Обработка кнопки очистки
-        if (action && action.name === 'clear') {
-            const fieldName = action.dataset.field;
-            const input = elements[fieldName];
-            
-            if (input) {
-                input.value = ''; 
-                if (input.tagName === 'SELECT') {
-                    input.selectedIndex = 0;
-                }
-            }
-        }
+        // -------------------------------------
 
-        // Фильтруем данные, используя ПОДГОТОВЛЕННЫЙ state
         return data.filter(row => compare(row, preparedState));
     };
-} 
+}
