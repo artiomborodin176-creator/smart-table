@@ -1,50 +1,34 @@
-import { createComparison, rules } from "../lib/compare.js";
+export function initFiltering(elements) {
+    const updateIndexes = (elements, indexes) => {
+        Object.keys(indexes).forEach((elementName) => {
+            elements[elementName].append(...Object.values(indexes[elementName]).map(name => {
+                const el = document.createElement('option');
+                el.textContent = name;
+                el.value = name;
+                return el;
+            }))
+        })
+    }
 
-export function initFiltering(elements, indexes) {
-    // 1. Заполняем выпадающие списки опциями из indexes
-    Object.keys(indexes).forEach((elementName) => {
-        // elements[elementName] существует, потому что мы собрали его в main.js
-        const selectElement = elements[elementName];
-        if (selectElement) {
-            // Очищаем старые опции (на случай повторного рендера), оставляем первую ("—")
-            const firstOption = selectElement.firstElementChild;
-            // Удаляем все опции кроме первой
-            while (selectElement.lastElementChild !== firstOption) {
-                selectElement.removeChild(selectElement.lastElementChild);
+    const applyFiltering = (query, state, action) => {
+        // код с обработкой очистки поля
+         
+
+        // @todo: #4.5 — отфильтровать данные, используя компаратор
+        const filter = {};
+        Object.keys(elements).forEach(key => {
+            if (elements[key]) {
+                if (['INPUT', 'SELECT'].includes(elements[key].tagName) && elements[key].value) { // ищем поля ввода в фильтре с непустыми данными
+                    filter[`filter[${elements[key].name}]`] = elements[key].value; // чтобы сформировать в query вложенный объект фильтра
+                }
             }
-            // Добавляем новые опции из indexes
-            Object.values(indexes[elementName]).forEach(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
-                selectElement.appendChild(option);
-            });
-        }
-    });
-    // 2. НАСТРАИВАЕМ КОМПАРАТОР ПРАВИЛЬНО
-    // Вместо defaultRules собираем правила вручную.
-    const compare = createComparison([
-        'skipEmptyTargetValues', 
-        'caseInsensitiveStringIncludes',
-        'arrayAsRange'
-        ],
-    );
-    // 3. Возвращаем функцию фильтрации
-    return (data, state, action) => {
-        const preparedState = { ...state };
-        const from = preparedState.totalFrom;
-        const to = preparedState.totalTo;
+        })
 
-        // Собираем массив [from, to] для поля 'total', чтобы сработало правило arrayAsRange
-        if (from !== undefined && from !== '' && to !== undefined && to !== '') {
-            preparedState.total = [Number(from), Number(to)];
-        } else if (from !== undefined && from !== '') {
-            preparedState.total = [Number(from), Infinity];
-        } else if (to !== undefined && to !== '') {
-            preparedState.total = [-Infinity, Number(to)];
-        }
-        // -------------------------------------
+        return Object.keys(filter).length ? Object.assign({}, query, filter) : query; // если в фильтре что-то добавилось, применим к запросу
+    }
 
-        return data.filter(row => compare(row, preparedState));
-    };
+    return {
+        updateIndexes,
+        applyFiltering
+    }
 }
