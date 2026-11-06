@@ -13,7 +13,7 @@ import {initSearching} from "./components/searching.js"
 // @todo: подключение
 
 // Исходные данные используемые в render()
-const api = initData(sourceData);
+const api = initData();
 
 /**
  * Сбор и обработка полей из таблицы
@@ -84,8 +84,7 @@ const sampleTable = initTable(
     const {applyFiltering, updateIndexes} = initFiltering(sampleTable.filter.elements);
 
      //поиск
-    const searchInput = sampleTable.container.querySelector('input[data-field="search"]');
-    const applySearching = initSearching(searchInput);
+    const applySearching = initSearching('search');
 
     const appRoot = document.querySelector('#app');
     appRoot.appendChild(sampleTable.container);
